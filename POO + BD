@@ -1,29 +1,28 @@
-package br.unipar;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class Main {
-    
+
     private static final String url = "jdbc:postgresql://localhost:5432/exemplo 1";
 
     private static final String user = "postgres";
 
     private static final String password = "admin123";
 
-    public static void main(String[] args) {
-        criarTabelaUsuario
+    public static void main(String[] args) throws SQLException {
+        criarTabelaUsuario();
+
+        inserirusuario("taffe", "12345", "fabio", "1980-01-01");
+
     }
 
-    public Connection connection() throws SQLException {
+
+    public static Connection connection() throws SQLException {
     //localhost -> Onde esta o banco
     //5432 -> Porta padrão do banco
         return DriverManager.getConnection(url, user, password);
     }
 
-    public void criarTabelaUsuario() throws SQLException {
+    public static void criarTabelaUsuario() throws SQLException {
         try {
             Connection conn = connection();
 
@@ -34,12 +33,55 @@ public class Main {
                         + "password VARCHAR(300) NOT NULL,"
                         + "nome VARCHAR(50) NOT NULL,"
                         + "nascimento DATE )";
-        
-        statement.execute(sql);    
+
+        statement.execute(sql);
+
+        System.out.println("TABELA CRIADA");
 
         }catch (SQLException exception) {
             exception.printStackTrace();
         }
     }
 
-}
+    public static  void inserirusuario(String username, String password,
+                                        String nome, String dataNascimento){
+        try {
+            //Abre a conexao
+            Connection conn = connection();
+            //Prepara a execução em um sql
+            PreparedStatement preparedStatement = conn.prepareStatement(
+                    "INSERT INTO usuarios (username, password, nome, nascimento)"
+                    + " VALUES (?, ?, ?, ?)"
+                    );
+
+
+            preparedStatement.setString(1, username);
+            preparedStatement.setString(2, password);
+            preparedStatement.setString(3, nome);
+            preparedStatement.setDate(4, Date.valueOf(dataNascimento));
+
+            preparedStatement.executeUpdate();
+
+            System.out.println("USUARIO CRIADO");
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public static void listarTodosUsuarios(){
+
+        try {
+            Connection conn = connection();
+
+            Statement statement = conn.createStatement();
+
+            ResultSet result = Statement.executeQuery("SELECT * FROM usuarios");
+
+            while (result.next()) {}
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+
+    }
